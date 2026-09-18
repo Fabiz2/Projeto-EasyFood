@@ -5,10 +5,19 @@ const restaurantForm = document.getElementById("restaurant-form");
 const nameInput = document.getElementById("name");
 const categoryInput = document.getElementById("category");
 const ratingInput = document.getElementById("rating");
+const authForm = document.getElementById("auth-form");
+const authNameInput = document.getElementById("auth-name");
+const authEmailInput = document.getElementById("auth-email");
+const authPasswordInput = document.getElementById("auth-password");
+const registerButton = document.getElementById("register-button");
+const loginButton = document.getElementById("login-button");
 const message = document.getElementById("message");
 const loadingWrap = document.getElementById("loading-wrap");
 const refreshButton = document.getElementById("refresh-button");
 const restaurantCount = document.getElementById("restaurant-count");
+const usersPanel = document.getElementById("users-panel");
+const restaurantsPanel = document.getElementById("restaurants-panel");
+const tabButtons = document.querySelectorAll(".tab-button");
 
 function showMessage(type, text) {
   message.className = `message show ${type}`;
@@ -22,6 +31,27 @@ function clearMessage() {
 
 function showLoading(visible) {
   loadingWrap.classList.toggle("visible", visible);
+}
+
+function setActiveTab(tab) {
+  tabButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === tab);
+  });
+
+  const shouldShowUsers = tab === "users";
+  usersPanel.classList.toggle("hidden-panel", !shouldShowUsers);
+  restaurantsPanel.classList.toggle("hidden-panel", shouldShowUsers);
+}
+
+function getAuthHeaders() {
+  const headers = { "Content-Type": "application/json" };
+  const token = localStorage.getItem("easyfood_token");
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
 }
 
 function renderRestaurants(restaurants) {
@@ -70,7 +100,9 @@ async function fetchRestaurants() {
   clearMessage();
 
   try {
-    const response = await fetch(`${API_URL}/restaurants`);
+    const response = await fetch(`${API_URL}/restaurants`, {
+      headers: getAuthHeaders()
+    });
 
     if (!response.ok) {
       throw new Error("Não foi possível carregar os restaurantes");
@@ -84,6 +116,69 @@ async function fetchRestaurants() {
     showLoading(false);
   }
 }
+
+async function handleAuth(action) {
+  const name = authNameInput.value.trim();
+  const email = authEmailInput.value.trim();
+  const password = authPasswordInput.value.trim();
+
+  if (!email || !password) {
+    showMessage("error", "Email e senha são obrigatórios");
+    return;
+  }
+
+  if (action === "register" && !name) {
+    showMessage("error", "Nome é obrigatório para cadastro");
+    return;
+  }
+
+  showLoading(true);
+  clearMessage();
+
+  try {
+    const response = await fetch(`${API_URL}/auth/${action}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(action === "register" ? { name, email, password } : { email, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `Erro ao ${action === "register" ? "cadastrar" : "logar"}`);
+    }
+
+    if (data.token) {
+      localStorage.setItem("easyfood_token", data.token);
+      showMessage("success", "Login realizado com sucesso");
+    } else {
+      showMessage("success", action === "register" ? "Usuário cadastrado com sucesso" : "Operação concluída");
+    }
+
+    authForm.reset();
+  } catch (error) {
+    showMessage("error", error.message || "Erro na autenticação");
+  } finally {
+    showLoading(false);
+  }
+}
+
+authForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  handleAuth("register");
+});
+
+registerButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  handleAuth("register");
+});
+
+loginButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  handleAuth("login");
+});
 
 restaurantForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -108,14 +203,8 @@ restaurantForm.addEventListener("submit", async (event) => {
   try {
     const response = await fetch(`${API_URL}/restaurants`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name,
-        category,
-        rating
-      })
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ name, category, rating })
     });
 
     if (!response.ok) {
@@ -126,7 +215,6 @@ restaurantForm.addEventListener("submit", async (event) => {
     restaurantForm.reset();
     ratingInput.value = 4.5;
     showMessage("success", "Restaurante criado com sucesso");
-
     await fetchRestaurants();
   } catch (error) {
     showMessage("error", error.message || "Erro ao criar restaurante");
@@ -149,7 +237,8 @@ restaurantList.addEventListener("click", async (event) => {
 
   try {
     const response = await fetch(`${API_URL}/restaurants/${id}`, {
-      method: "DELETE"
+      method: "DELETE",
+      headers: getAuthHeaders()
     });
 
     if (!response.ok) {
@@ -165,10 +254,22 @@ restaurantList.addEventListener("click", async (event) => {
   }
 });
 
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setActiveTab(button.dataset.tab);
+  });
+});
+
 refreshButton.addEventListener("click", fetchRestaurants);
 
+setActiveTab("users");
 fetchRestaurants();
 
 function escapeHtml(value) {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }

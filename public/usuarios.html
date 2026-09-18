@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EasyFood - Usuários</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f7fb;
+        color: #1f2937;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      .nav {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      .nav a {
+        background: #1f2937;
+        color: #fff;
+        text-decoration: none;
+        padding: 10px 16px;
+        border-radius: 10px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      }
+      h1, h2 { margin-top: 0; }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      input, button {
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 1rem;
+      }
+      button {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .secondary {
+        background: #374151;
+      }
+      .message {
+        margin-top: 12px;
+        min-height: 24px;
+        font-weight: 600;
+      }
+      .success { color: #166534; }
+      .error { color: #b91c1c; }
+      .user-box {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+      }
+      .user-box p { margin: 8px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="nav">
+        <a href="/">Home</a>
+        <a href="/usuarios.html">Usuários</a>
+        <a href="/restaurantes.html">Restaurantes</a>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Cadastrar usuário</h2>
+          <form id="register-form">
+            <input type="text" id="name" placeholder="Nome" required />
+            <input type="email" id="email" placeholder="Email" required />
+            <input type="password" id="password" placeholder="Senha" required />
+            <button type="submit">Cadastrar</button>
+          </form>
+          <div id="register-message" class="message"></div>
+        </section>
+
+        <section class="card">
+          <h2>Login do usuário</h2>
+          <form id="login-form">
+            <input type="email" id="login-email" placeholder="Email" required />
+            <input type="password" id="login-password" placeholder="Senha" required />
+            <button type="submit" class="secondary">Login</button>
+          </form>
+          <div id="login-message" class="message"></div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top: 24px;">
+        <h2>Ver usuário atual</h2>
+        <button id="me-button" class="secondary" type="button">Buscar usuário autenticado</button>
+        <div id="me-message" class="user-box" style="display:none;"></div>
+      </section>
+    </div>
+
+    <script>
+      const API_URL = 'http://localhost:3000';
+
+      const registerForm = document.getElementById('register-form');
+      const loginForm = document.getElementById('login-form');
+      const registerMessage = document.getElementById('register-message');
+      const loginMessage = document.getElementById('login-message');
+      const meButton = document.getElementById('me-button');
+      const meMessage = document.getElementById('me-message');
+
+      function setMessage(element, type, text) {
+        element.className = `message ${type}`;
+        element.textContent = text;
+      }
+
+      registerForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const payload = {
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value
+        };
+
+        try {
+          const response = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Erro ao cadastrar usuário');
+          }
+
+          setMessage(registerMessage, 'success', 'Usuário cadastrado com sucesso.');
+          registerForm.reset();
+        } catch (error) {
+          setMessage(registerMessage, 'error', error.message);
+        }
+      });
+
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const payload = {
+          email: document.getElementById('login-email').value,
+          password: document.getElementById('login-password').value
+        };
+
+        try {
+          const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Erro ao fazer login');
+          }
+
+          if (data.token) {
+            localStorage.setItem('easyfood_token', data.token);
+          }
+
+          setMessage(loginMessage, 'success', 'Login realizado com sucesso.');
+          loginForm.reset();
+        } catch (error) {
+          setMessage(loginMessage, 'error', error.message);
+        }
+      });
+
+      meButton.addEventListener('click', async () => {
+        const token = localStorage.getItem('easyfood_token');
+
+        if (!token) {
+          meMessage.style.display = 'block';
+          meMessage.innerHTML = '<p>Você precisa fazer login antes.</p>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_URL}/auth/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Token inválido');
+          }
+
+          meMessage.style.display = 'block';
+          meMessage.innerHTML = `
+            <p><strong>ID:</strong> ${data.user.id}</p>
+            <p><strong>Email:</strong> ${data.user.email}</p>
+            <p><strong>Mensagem:</strong> ${data.message}</p>
+          `;
+        } catch (error) {
+          meMessage.style.display = 'block';
+          meMessage.innerHTML = `<p>${error.message}</p>`;
+        }
+      });
+    </script>
+  </body>
+</html>

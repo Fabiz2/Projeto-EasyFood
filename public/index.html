@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EasyFood - Restaurantes</title>
+  <title>EasyFood - Dashboard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,14 +15,14 @@
       </div>
 
       <nav class="sidebar-nav">
-        <a class="nav-link active" href="#">
+        <button class="nav-link active tab-button" data-tab="users" type="button">
+          <span class="nav-icon">👤</span>
+          <span>Usuários</span>
+        </button>
+        <button class="nav-link tab-button" data-tab="restaurants" type="button">
           <span class="nav-icon">☰</span>
           <span>Restaurantes</span>
-        </a>
-        <a class="nav-link" href="#">
-          <span class="nav-icon">✦</span>
-          <span>Dashboard</span>
-        </a>
+        </button>
       </nav>
 
       <div class="sidebar-card">
@@ -35,16 +35,53 @@
     <main class="main-content">
       <section class="topbar">
         <div>
-          <p class="section-label">Gerenciador de restaurantes</p>
+          <p class="section-label">Dashboard</p>
           <h1>EasyFood</h1>
         </div>
-        <button class="refresh-button" id="refresh-button">
+        <button class="refresh-button" id="refresh-button" type="button" aria-label="Atualizar lista">
           <span class="refresh-icon">⟳</span>
         </button>
       </section>
 
       <section class="workspace-grid">
-        <section class="panel form-panel">
+        <section class="panel form-panel" id="users-panel">
+          <div class="panel-header">
+            <span class="panel-kicker">Usuários</span>
+            <span class="panel-icon">👤</span>
+          </div>
+
+          <form id="auth-form" class="restaurant-form">
+            <div class="input-group">
+              <label for="auth-name">Nome</label>
+              <input type="text" id="auth-name" name="auth-name" placeholder="Seu nome" />
+            </div>
+
+            <div class="input-group">
+              <label for="auth-email">Email</label>
+              <input type="email" id="auth-email" name="auth-email" placeholder="usuario@email.com" required />
+            </div>
+
+            <div class="input-group">
+              <label for="auth-password">Senha</label>
+              <input type="password" id="auth-password" name="auth-password" placeholder="Sua senha" required />
+            </div>
+
+            <div class="button-row">
+              <button type="submit" class="submit-button" id="register-button">
+                <span class="button-icon">✚</span>
+                <span>Cadastrar</span>
+              </button>
+              <button type="button" class="submit-button secondary-button" id="login-button">
+                <span class="button-icon">➡</span>
+                <span>Login</span>
+              </button>
+            </div>
+          </form>
+
+          <div id="message" class="message" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="panel form-panel hidden-panel" id="restaurants-panel">
           <div class="panel-header">
             <span class="panel-kicker">Novo restaurante</span>
             <span class="panel-icon">+</span>
@@ -71,15 +108,13 @@
               <span>Cadastrar restaurante</span>
             </button>
           </form>
-
-          <div id="message" class="message" role="status" aria-live="polite"></div>
         </section>
 
         <section class="panel list-panel">
           <div class="panel-header list-header">
             <div>
-              <span class="panel-kicker">Catálogo</span>
-              <h2>Restaurantes</h2>
+              <span class="panel-kicker">Lista</span>
+              <h2>Usuários</h2>
             </div>
             <div class="loading-wrap" id="loading-wrap">
               <span class="loader"></span>
@@ -89,8 +124,8 @@
 
           <div class="restaurant-list" id="restaurant-list">
             <div class="empty-state">
-              <span class="empty-icon">🍽️</span>
-              <p>Sem restaurantes cadastrados.</p>
+              <span class="empty-icon">👤</span>
+              <p>Sem usuários cadastrados.</p>
             </div>
           </div>
         </section>
@@ -100,5 +135,4 @@
 
   <script src="script.js"></script>
 </body>
-</html>
 </html>

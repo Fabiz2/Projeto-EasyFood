@@ -3,6 +3,7 @@ const cors = require("cors");
 const path = require("path");
 
 const restaurantRoutes = require("./modules/restaurants/restaurant.routes");
+const authRoutes = require("./modules/auth/auth.routes");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(
 );
 
 app.use("/restaurants", restaurantRoutes);
+app.use("/auth", authRoutes);
 
 module.exports = app;
 
