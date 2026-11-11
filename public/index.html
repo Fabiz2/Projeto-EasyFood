@@ -3,135 +3,163 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EasyFood - Dashboard</title>
+  <title>EasyFood</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app-wrapper">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-icon">🍽️</div>
-        <span class="brand-text">EasyFood</span>
+  <header class="placa">
+    <div class="placa-inner">
+      <a class="logo" href="/">EasyFood</a>
+      <p class="slogan">Os cardápios da vizinhança, num lugar só.</p>
+      <div class="conta" id="conta">
+        <button type="button" class="btn btn-claro" id="btn-entrar">Entrar</button>
       </div>
+    </div>
+  </header>
 
-      <nav class="sidebar-nav">
-        <button class="nav-link active tab-button" data-tab="users" type="button">
-          <span class="nav-icon">👤</span>
-          <span>Usuários</span>
-        </button>
-        <button class="nav-link tab-button" data-tab="restaurants" type="button">
-          <span class="nav-icon">☰</span>
-          <span>Restaurantes</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-card">
-        <span class="sidebar-card-label">Hoje</span>
-        <span class="sidebar-card-number" id="restaurant-count">0</span>
-        <span class="sidebar-card-text">restaurantes</span>
+  <main class="balcao">
+    <section class="lista" aria-labelledby="titulo-lista">
+      <div class="lista-topo">
+        <h2 id="titulo-lista">Restaurantes</h2>
+        <button type="button" class="btn btn-carimbo so-logado" id="btn-novo-restaurante">Cadastrar restaurante</button>
       </div>
-    </aside>
+      <ul class="restaurantes" id="restaurantes" aria-live="polite">
+        <li class="aviso">Carregando restaurantes…</li>
+      </ul>
+    </section>
 
-    <main class="main-content">
-      <section class="topbar">
-        <div>
-          <p class="section-label">Dashboard</p>
-          <h1>EasyFood</h1>
-        </div>
-        <button class="refresh-button" id="refresh-button" type="button" aria-label="Atualizar lista">
-          <span class="refresh-icon">⟳</span>
-        </button>
-      </section>
+    <section class="folha" id="folha" aria-live="polite">
+      <div class="folha-vazia">
+        <h2>Escolha um restaurante</h2>
+        <p>Clique em um restaurante da lista para ver o cardápio.</p>
+      </div>
+    </section>
+  </main>
 
-      <section class="workspace-grid">
-        <section class="panel form-panel" id="users-panel">
-          <div class="panel-header">
-            <span class="panel-kicker">Usuários</span>
-            <span class="panel-icon">👤</span>
-          </div>
+  <footer class="rodape">
+    <p>Projeto acadêmico da disciplina Software Architecture &amp; Design Patterns (UniFECAF)</p>
+  </footer>
 
-          <form id="auth-form" class="restaurant-form">
-            <div class="input-group">
-              <label for="auth-name">Nome</label>
-              <input type="text" id="auth-name" name="auth-name" placeholder="Seu nome" />
-            </div>
+  <!-- Entrar / criar conta -->
+  <dialog id="dlg-conta" class="janela">
+    <form method="dialog" class="janela-form" id="form-conta" novalidate>
+      <h2 id="conta-titulo">Entrar</h2>
+      <p class="janela-sub" id="conta-sub">Entre para cadastrar restaurantes e pratos.</p>
 
-            <div class="input-group">
-              <label for="auth-email">Email</label>
-              <input type="email" id="auth-email" name="auth-email" placeholder="usuario@email.com" required />
-            </div>
+      <label class="campo" id="campo-nome" hidden>
+        <span>Nome</span>
+        <input type="text" name="name" autocomplete="name" />
+      </label>
+      <label class="campo">
+        <span>E-mail</span>
+        <input type="email" name="email" autocomplete="email" required />
+      </label>
+      <label class="campo">
+        <span>Senha</span>
+        <input type="password" name="password" autocomplete="current-password" required minlength="6" />
+      </label>
 
-            <div class="input-group">
-              <label for="auth-password">Senha</label>
-              <input type="password" id="auth-password" name="auth-password" placeholder="Sua senha" required />
-            </div>
+      <p class="erro" role="alert"></p>
 
-            <div class="button-row">
-              <button type="submit" class="submit-button" id="register-button">
-                <span class="button-icon">✚</span>
-                <span>Cadastrar</span>
-              </button>
-              <button type="button" class="submit-button secondary-button" id="login-button">
-                <span class="button-icon">➡</span>
-                <span>Login</span>
-              </button>
-            </div>
-          </form>
+      <div class="janela-acoes">
+        <button type="button" class="link" id="conta-alternar">Ainda não tenho conta</button>
+        <button type="button" class="btn btn-claro" value="cancel" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-carimbo" id="conta-enviar">Entrar</button>
+      </div>
+    </form>
+  </dialog>
 
-          <div id="message" class="message" role="status" aria-live="polite"></div>
-        </section>
+  <!-- Novo restaurante -->
+  <dialog id="dlg-restaurante" class="janela">
+    <form method="dialog" class="janela-form" id="form-restaurante" novalidate>
+      <h2>Cadastrar restaurante</h2>
+      <p class="janela-sub">Depois do cadastro, a EasyFood envia um e-mail de boas-vindas.</p>
 
-        <section class="panel form-panel hidden-panel" id="restaurants-panel">
-          <div class="panel-header">
-            <span class="panel-kicker">Novo restaurante</span>
-            <span class="panel-icon">+</span>
-          </div>
+      <label class="campo">
+        <span>Nome do restaurante</span>
+        <input type="text" name="name" required maxlength="150" placeholder="Cantina da Nona" />
+      </label>
+      <label class="campo">
+        <span>Categoria</span>
+        <input type="text" name="category" required maxlength="100" placeholder="Italiana" list="categorias" />
+        <datalist id="categorias">
+          <option value="Pizza"></option>
+          <option value="Italiana"></option>
+          <option value="Japonesa"></option>
+          <option value="Brasileira"></option>
+          <option value="Burger"></option>
+          <option value="Mexicana"></option>
+          <option value="Lanches"></option>
+        </datalist>
+      </label>
+      <label class="campo campo-curto">
+        <span>Avaliação (0 a 5)</span>
+        <input type="number" name="rating" min="0" max="5" step="0.1" placeholder="4.5" />
+      </label>
 
-          <form id="restaurant-form" class="restaurant-form">
-            <div class="input-group">
-              <label for="name">Nome</label>
-              <input type="text" id="name" name="name" placeholder="Ex: Sabor & Arte" required />
-            </div>
+      <p class="erro" role="alert"></p>
 
-            <div class="input-group">
-              <label for="category">Categoria</label>
-              <input type="text" id="category" name="category" placeholder="Ex: Brasileira" required />
-            </div>
+      <div class="janela-acoes">
+        <button type="button" class="btn btn-claro" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-carimbo">Cadastrar restaurante</button>
+      </div>
+    </form>
+  </dialog>
 
-            <div class="input-group">
-              <label for="rating">Avaliação</label>
-              <input type="number" id="rating" name="rating" min="0" max="5" step="0.5" placeholder="4.5" required />
-            </div>
+  <!-- Novo prato -->
+  <dialog id="dlg-prato" class="janela">
+    <form method="dialog" class="janela-form" id="form-prato" novalidate>
+      <h2>Adicionar prato</h2>
+      <p class="janela-sub" id="prato-sub"></p>
 
-            <button type="submit" class="submit-button">
-              <span class="button-icon">✚</span>
-              <span>Cadastrar restaurante</span>
-            </button>
-          </form>
-        </section>
+      <label class="campo">
+        <span>Nome do prato</span>
+        <input type="text" name="name" required maxlength="150" placeholder="Pizza Margherita" />
+      </label>
+      <label class="campo">
+        <span>Descrição</span>
+        <textarea name="description" required maxlength="500" rows="3" placeholder="Molho de tomate, muçarela e manjericão"></textarea>
+      </label>
+      <label class="campo campo-curto">
+        <span>Preço (R$)</span>
+        <input type="number" name="price" required min="0.01" step="0.01" placeholder="49.90" />
+      </label>
+      <label class="campo">
+        <span>Foto (opcional, JPEG, PNG ou WebP até 5 MB)</span>
+        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" />
+      </label>
 
-        <section class="panel list-panel">
-          <div class="panel-header list-header">
-            <div>
-              <span class="panel-kicker">Lista</span>
-              <h2>Usuários</h2>
-            </div>
-            <div class="loading-wrap" id="loading-wrap">
-              <span class="loader"></span>
-              <span class="loader-text">Carregando...</span>
-            </div>
-          </div>
+      <p class="erro" role="alert"></p>
 
-          <div class="restaurant-list" id="restaurant-list">
-            <div class="empty-state">
-              <span class="empty-icon">👤</span>
-              <p>Sem usuários cadastrados.</p>
-            </div>
-          </div>
-        </section>
-      </section>
-    </main>
-  </div>
+      <div class="janela-acoes">
+        <button type="button" class="btn btn-claro" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-carimbo">Adicionar prato</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Foto do prato -->
+  <dialog id="dlg-foto" class="janela">
+    <form method="dialog" class="janela-form" id="form-foto" novalidate>
+      <h2>Enviar foto</h2>
+      <p class="janela-sub" id="foto-sub"></p>
+
+      <label class="campo">
+        <span>Foto (JPEG, PNG ou WebP até 5 MB)</span>
+        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required />
+      </label>
+      <p class="nota">A imagem é reduzida para até 800 px de largura e convertida para WebP antes de ser salva.</p>
+
+      <p class="erro" role="alert"></p>
+
+      <div class="janela-acoes">
+        <button type="button" class="btn btn-claro" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-carimbo">Enviar foto</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="recado" id="recado" role="status" aria-live="polite"></div>
 
   <script src="script.js"></script>
 </body>

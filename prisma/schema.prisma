@@ -1,12 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema da EasyFood
+// Docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-   provider = "mysql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -15,6 +15,7 @@ model Restaurant {
   name     String   @db.VarChar(150)
   category String?  @db.VarChar(100)
   rating   Decimal? @db.Decimal(2, 1)
+  dishes   Dish[]
 }
 
 model User {
@@ -22,4 +23,14 @@ model User {
   name     String @db.VarChar(150)
   email    String @unique @db.VarChar(150)
   password String @db.VarChar(255)
+}
+
+model Dish {
+  id           Int        @id @default(autoincrement())
+  name         String     @db.VarChar(150)
+  description  String     @db.VarChar(500)
+  price        Decimal    @db.Decimal(10, 2)
+  imageUrl     String?    @db.VarChar(255)
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }

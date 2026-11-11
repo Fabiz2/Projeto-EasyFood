@@ -1,5 +1,9 @@
+require("dotenv").config({ quiet: true });
+
 const app = require("./src/app");
 
-app.listen(3000, () => {
-  console.log("EasyFood rodando na porta 3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`EasyFood rodando na porta ${PORT}`);
 });

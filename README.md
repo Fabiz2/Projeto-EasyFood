@@ -1,153 +1,130 @@
 # EasyFood
 
-API para cadastro e listagem de restaurantes com arquitetura em camadas e autenticação JWT.
+API e front-end para restaurantes publicarem seus cardápios. Projeto da disciplina Software Architecture & Design Patterns (UniFECAF).
 
-## Visão geral
+A aplicação é um monólito modular em camadas (routes → controller → service → database) com:
 
-O projeto EasyFood foi estruturado para separar responsabilidades em camadas:
-
-- `src/database` para a conexão com o Prisma
-- `src/modules/restaurants` para a lógica de restaurantes
-- `src/modules/auth` para autenticação e proteção de rotas
-- `src/app.js` para a configuração do Express
-- `server.js` para iniciar a aplicação
+- cadastro e consulta de restaurantes;
+- cardápio por restaurante (relação 1:N entre `Restaurant` e `Dish`);
+- autenticação com JWT e senhas com hash bcrypt;
+- e-mail automático no cadastro de restaurantes (SendPulse, com suporte ao Resend);
+- upload de fotos dos pratos, otimizadas com Sharp (até 800 px, WebP);
+- front-end em HTML, CSS e JavaScript puro, servido pelo próprio Express.
 
 ## Tecnologias
 
-- Node.js
-- Express
-- Prisma
-- MySQL
-- JWT
-- bcryptjs
-- dotenv
+Node.js, Express 5, Prisma 6, MySQL, JWT, bcryptjs, dotenv, SendPulse/Resend, Multer e Sharp.
 
-## Pré-requisitos
+## Como rodar
 
-- Node.js instalado
-- MySQL em execução
-- npm ou yarn
+**Pré-requisitos:** Node.js 20 ou superior e MySQL rodando.
 
-## Instalação
+1. Instale as dependências:
 
-1. Clone o projeto
-2. Instale as dependências:
+   ```bash
+   npm install
+   ```
 
-```bash
-npm install
-```
+2. Crie o arquivo `.env` a partir do exemplo e preencha os valores:
 
-3. Configure o arquivo `.env` com a URL do banco e o segredo JWT:
+   ```bash
+   cp .env.example .env
+   ```
 
-```env
-DATABASE_URL="mysql://usuario:senha@localhost:3306/easyfood"
-JWT_SECRET="troque-por-uma-chave-longa-e-aleatoria"
-```
+   | Variável | Para que serve |
+   |---|---|
+   | `DATABASE_URL` | Conexão com o MySQL, ex.: `mysql://root:senha@localhost:3306/easyfood` |
+   | `JWT_SECRET` | Chave usada para assinar os tokens |
+   | `EMAIL_API_KEY` | Chave do SendPulse (`sp_...`, em Configurações → API) ou do Resend (`re_...`) |
+   | `EMAIL_FROM` | Remetente cadastrado na conta do provedor |
+   | `EMAIL_FROM_NAME` | Nome que aparece como remetente |
+   | `EMAIL_TEST_TO` | Destinatário dos e-mails de teste |
 
-## Prisma
+   Sem `EMAIL_API_KEY`, a API funciona normalmente e apenas registra no terminal que o e-mail não foi enviado.
 
-Gere o client e aplique as migrations:
+3. Crie as tabelas e gere o Prisma Client:
 
-```bash
-npx prisma generate
-npx prisma migrate dev
-```
+   ```bash
+   npx prisma migrate dev
+   ```
 
-## Execução
+4. (Opcional) Popule o banco com restaurantes e pratos de exemplo:
 
-Inicie o servidor:
+   ```bash
+   npm run seed
+   ```
 
-```bash
-node server.js
-```
+5. Inicie o servidor:
 
-A aplicação estará disponível em:
+   ```bash
+   npm start
+   ```
 
-```text
-http://localhost:3000
-```
+   Acesse **http://localhost:3000**. Para ver o banco: `npm run studio`.
 
 ## Endpoints
 
-### Restaurantes
-
-#### GET /restaurants
-Retorna a lista de restaurantes.
-
-#### POST /restaurants
-Cria um restaurante.
-
-Body exemplo:
-
-```json
-{
-  "name": "Cantina Roma",
-  "category": "Italiana",
-  "rating": 4.5
-}
-```
-
-#### DELETE /restaurants/:id
-Remove um restaurante pelo ID.
+🔒 = exige o header `Authorization: Bearer SEU_TOKEN`
 
 ### Autenticação
 
-#### POST /auth/register
-Cria um novo usuário.
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/auth/register` | Cria usuário `{ name, email, password }` → 201 |
+| POST | `/auth/login` | Retorna `{ token, user }` |
+| GET | `/auth/me` 🔒 | Dados do usuário autenticado |
 
-Body exemplo:
+### Restaurantes
 
-```json
-{
-  "name": "Aluno",
-  "email": "aluno@easyfood.com",
-  "password": "123456"
-}
-```
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/restaurants` | Lista restaurantes (com a quantidade de pratos) |
+| POST | `/restaurants` 🔒 | Cria `{ name, category, rating }` → 201 e dispara 2 e-mails |
+| DELETE | `/restaurants/:id` 🔒 | Remove o restaurante e o cardápio dele |
 
-#### POST /auth/login
-Realiza login e retorna JWT.
+### Cardápio
 
-Body exemplo:
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/restaurants/:restaurantId/dishes` | Lista os pratos do restaurante |
+| POST | `/restaurants/:restaurantId/dishes` 🔒 | Cria `{ name, description, price }` → 201 |
+| POST | `/dishes/:dishId/image` 🔒 | Envia foto (form-data, campo `image`) → 200 |
 
-```json
-{
-  "email": "aluno@easyfood.com",
-  "password": "123456"
-}
-```
+Respostas de erro do upload: 400 (sem arquivo, formato inválido ou imagem corrompida), 413 (acima de 5 MB) e 404 (prato inexistente).
 
-#### GET /auth/me
-Retorna os dados do usuário autenticado.
+As imagens otimizadas ficam em `uploads/dishes/` e são servidas em `/uploads/dishes/<arquivo>.webp`.
 
-Requer header:
-
-```http
-Authorization: Bearer SEU_TOKEN
-```
-
-## Estrutura do projeto
+## Estrutura
 
 ```text
 .
-├── adrs/
+├── docs/adr/                  Registros de decisões arquiteturais
 ├── prisma/
-├── public/
+│   ├── migrations/
+│   ├── schema.prisma
+│   └── seed.js
+├── public/                    Front-end (index.html, style.css, script.js, fonts/)
 ├── src/
-│   ├── app.js
-│   ├── database/
-│   │   └── prisma.js
-│   ├── modules/
-│   │   ├── auth/
-│   │   └── restaurants/
-├── .env
-├── package.json
-├── server.js
-└── README.md
+│   ├── app.js                 Middlewares, arquivos estáticos e rotas
+│   ├── database/prisma.js     Conexão única com o banco
+│   └── modules/
+│       ├── auth/              register, login, me e middleware JWT
+│       ├── restaurants/       routes, controller, service
+│       ├── dishes/            routes, controller, service
+│       └── shared/            email.service, image.service,
+│                              upload.middleware, error.middleware
+├── uploads/dishes/            Imagens otimizadas (não versionadas)
+├── .env.example
+└── server.js                  Carrega o .env e liga o servidor
 ```
 
-## Observações
+## Decisões arquiteturais
 
-- A rota de restaurantes está pública na listagem.
-- O cadastro e a exclusão de restaurantes podem ser protegidos por autenticação conforme a evolução do projeto.
-- O segredo do JWT deve ser mantido em ambiente seguro.
+| ADR | Decisão |
+|---|---|
+| [001](docs/adr/ADR-001-armazenar-restaurantes-em-memoria.md) | Armazenar restaurantes em memória (MVP) |
+| [002](docs/adr/ADR-002-persistencia-com-mysql.md) | Persistência com MySQL + Prisma |
+| [003](docs/adr/ADR-003-arquitetura-em-camadas.md) | Arquitetura em camadas |
+| [004](docs/adr/ADR-004-autenticacao-jwt.md) | Autenticação com JWT |
+| [005](docs/adr/ADR-005-servico-de-envio-de-email.md) | Serviço compartilhado de e-mail |
+| [006](docs/adr/ADR-006-processamento-de-imagens.md) | Processamento de imagens dentro da API |

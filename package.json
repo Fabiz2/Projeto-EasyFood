@@ -1,24 +1,32 @@
 {
-  "name": "projeto-easyfood-aula1",
+  "name": "easyfood",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node prisma/seed.js",
+    "studio": "prisma studio"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "API e front da EasyFood: restaurantes, cardápio, autenticação JWT, e-mail e imagens",
   "dependencies": {
-    "@prisma/cli": "^8.0.0-rc.13",
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.0",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.5.0",
+    "resend": "^6.38.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "prisma": "^6.19.3"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }
