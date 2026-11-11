@@ -38,17 +38,19 @@ Manter o processamento dentro da API EasyFood:
 
 ## Comparação das imagens
 
-Teste realizado com uma imagem JPEG de alta resolução:
+Foram feitos dois testes, com imagens de tamanhos bem diferentes:
 
-| | Formato | Tamanho | Dimensões |
-|---|---|---|---|
-| **Original** | JPEG | 441,9 KB | 2400 × 1600 |
-| **Otimizada** | WebP | 20,8 KB | 800 × 533 |
+| Teste | | Formato | Tamanho | Dimensões |
+|---|---|---|---|---|
+| Foto real de prato | **Original** | JPEG | 43,4 KB | 547 × 365 |
+| | **Otimizada** | WebP | 43,1 KB | 547 × 365 |
+| Imagem grande (alta resolução) | **Original** | JPEG | 441,9 KB | 2400 × 1600 |
+| | **Otimizada** | WebP | 20,8 KB | 800 × 533 |
 
-1. **A imagem otimizada ficou menor?** Sim, cerca de 95% menor.
-2. **Qual transformação foi realizada?** Redimensionamento para 800 px de largura (mantendo a proporção) e conversão de JPEG para WebP com qualidade 80.
-3. **Por que melhora a experiência do usuário?** Arquivos menores carregam mais rápido, principalmente no 4G, e consomem menos do plano de dados.
-4. **O arquivo sempre ficará menor?** Não necessariamente. Uma imagem que já é pequena ou já está bem comprimida pode ficar do mesmo tamanho ou até maior. O resultado depende da imagem original e da configuração de compressão.
+1. **A imagem otimizada ficou menor?** Nos dois casos, sim, mas em proporções muito diferentes. A imagem grande ficou cerca de 95% menor; a foto real, que já era pequena, praticamente não mudou (0,3 KB a menos).
+2. **Qual transformação foi realizada?** Conversão de JPEG para WebP com qualidade 80 nas duas. Na imagem grande houve também redimensionamento para 800 px de largura, mantendo a proporção. A foto real já tinha menos de 800 px, e o `withoutEnlargement: true` impede que ela seja ampliada.
+3. **Por que isso pode melhorar a experiência do usuário?** Fotos tiradas pelo celular costumam ser grandes como a do segundo teste. Reduzidas, carregam muito mais rápido, principalmente no 4G, e consomem menos do plano de dados.
+4. **O arquivo sempre ficará menor?** Não necessariamente, e a foto real mostra isso: quando a imagem já é pequena e bem comprimida, o ganho é quase nulo, e em alguns casos o arquivo pode até crescer. O resultado depende da imagem original e da configuração de compressão.
 
 > O servidor registra no terminal o antes/depois de cada upload (`[IMAGEM] original: ... -> otimizada: ...`).
 
