@@ -1,6 +1,28 @@
 const prisma = require("../../database/prisma");
 const emailService = require("../shared/email.service");
 
+function httpError(statusCode, message) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
+function parseId(value) {
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0) {
+    throw httpError(400, "Identificador inválido");
+  }
+  return id;
+}
+
+// Autorização por dono (correção do professor, Atividade 8).
+// Restaurantes sem dono (ownerId nulo) continuam podendo ser gerenciados por qualquer usuário logado.
+function ensureOwnership(restaurant, userId) {
+  if (restaurant.ownerId && restaurant.ownerId !== userId) {
+    throw httpError(403, "Você não tem permissão para gerenciar este restaurante");
+  }
+}
+
 async function listRestaurants() {
   return prisma.restaurant.findMany({
     orderBy: { id: "asc" },
@@ -8,13 +30,14 @@ async function listRestaurants() {
   });
 }
 
-async function createRestaurant(data) {
+async function createRestaurant(data, userId) {
   // 1. Operação principal
   const restaurant = await prisma.restaurant.create({
     data: {
       name: data.name,
       category: data.category,
-      rating: data.rating || 0
+      rating: data.rating || 0,
+      ownerId: userId // dono = usuário autenticado
     }
   });
 
@@ -58,13 +81,21 @@ async function createRestaurant(data) {
   return restaurant;
 }
 
-async function deleteRestaurant(id) {
-  return prisma.restaurant.delete({
-    where: { id: Number(id) }
-  });
+async function deleteRestaurant(restaurantId, userId) {
+  const id = parseId(restaurantId);
+  const restaurant = await prisma.restaurant.findUnique({ where: { id } });
+
+  if (!restaurant) {
+    throw httpError(404, "Restaurante não encontrado");
+  }
+
+  ensureOwnership(restaurant, userId);
+
+  return prisma.restaurant.delete({ where: { id } });
 }
 
 module.exports = {
+  ensureOwnership,
   listRestaurants,
   createRestaurant,
   deleteRestaurant

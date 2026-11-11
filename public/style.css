@@ -154,6 +154,69 @@ textarea {
   font-weight: 600;
 }
 
+/* ---------- Avatar ---------- */
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--carimbo);
+  color: #fff8ee;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 2px solid var(--papel);
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-botao {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: 0;
+  padding: 0.15rem 0.25rem;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.avatar-botao:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.avatar-grande {
+  width: 72px;
+  height: 72px;
+  font-size: 1.6rem;
+  border-color: #fff;
+  box-shadow: 0 1px 3px rgba(42, 28, 16, 0.35);
+}
+
+.perfil-previa {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.perfil-nome {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.perfil-previa .nota {
+  margin: 0;
+}
+
 /* ---------- Botões ---------- */
 
 .btn {

@@ -54,6 +54,10 @@ Foram feitos dois testes, com imagens de tamanhos bem diferentes:
 
 > O servidor registra no terminal o antes/depois de cada upload (`[IMAGEM] original: ... -> otimizada: ...`).
 
+## Reutilização (Atividade 8)
+
+Na Atividade 8, o mesmo `image.service.js` passou a atender também a foto de perfil do usuário (`POST /auth/me/image`). O serviço recebe o tipo de imagem e aplica a predefinição correspondente: `dishes` (até 800 px de largura) ou `users` (quadrada 400 × 400). Assim, a lógica de otimização não é duplicada entre os módulos.
+
 ## Tratamento de falhas
 
 | Situação | Resposta |

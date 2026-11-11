@@ -159,6 +159,33 @@
     </form>
   </dialog>
 
+  <!-- Foto do perfil -->
+  <dialog id="dlg-perfil" class="janela">
+    <form method="dialog" class="janela-form" id="form-perfil" novalidate>
+      <h2>Sua foto de perfil</h2>
+      <div class="perfil-previa">
+        <span class="avatar avatar-grande" id="perfil-avatar" aria-hidden="true"></span>
+        <div>
+          <p class="perfil-nome" id="perfil-nome"></p>
+          <p class="nota" id="perfil-email"></p>
+        </div>
+      </div>
+
+      <label class="campo">
+        <span>Nova foto (JPEG, PNG ou WebP até 5 MB)</span>
+        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required />
+      </label>
+      <p class="nota">A foto é recortada em formato quadrado (400 × 400) e convertida para WebP.</p>
+
+      <p class="erro" role="alert"></p>
+
+      <div class="janela-acoes">
+        <button type="button" class="btn btn-claro" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-carimbo">Salvar foto</button>
+      </div>
+    </form>
+  </dialog>
+
   <div class="recado" id="recado" role="status" aria-live="polite"></div>
 
   <script src="script.js"></script>

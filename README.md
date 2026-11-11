@@ -8,7 +8,8 @@ A aplicação é um monólito modular em camadas (routes → controller → serv
 - cardápio por restaurante (relação 1:N entre `Restaurant` e `Dish`);
 - autenticação com JWT e senhas com hash bcrypt;
 - e-mail automático no cadastro de restaurantes (SendPulse, com suporte ao Resend);
-- upload de fotos dos pratos, otimizadas com Sharp (até 800 px, WebP);
+- upload de fotos dos pratos e do perfil do usuário, otimizadas com Sharp por um serviço compartilhado;
+- autorização por dono: só quem cadastrou o restaurante gerencia o cardápio;
 - front-end em HTML, CSS e JavaScript puro, servido pelo próprio Express.
 
 ## Tecnologias
@@ -72,7 +73,8 @@ Node.js, Express 5, Prisma 6, MySQL, JWT, bcryptjs, dotenv, SendPulse/Resend, Mu
 |---|---|---|
 | POST | `/auth/register` | Cria usuário `{ name, email, password }` → 201 |
 | POST | `/auth/login` | Retorna `{ token, user }` |
-| GET | `/auth/me` 🔒 | Dados do usuário autenticado |
+| GET | `/auth/me` 🔒 | Dados do usuário autenticado (com `imageUrl`) |
+| POST | `/auth/me/image` 🔒 | Foto de perfil (form-data, campo `image`) → 200 |
 
 ### Restaurantes
 
@@ -80,19 +82,19 @@ Node.js, Express 5, Prisma 6, MySQL, JWT, bcryptjs, dotenv, SendPulse/Resend, Mu
 |---|---|---|
 | GET | `/restaurants` | Lista restaurantes (com a quantidade de pratos) |
 | POST | `/restaurants` 🔒 | Cria `{ name, category, rating }` → 201 e dispara 2 e-mails |
-| DELETE | `/restaurants/:id` 🔒 | Remove o restaurante e o cardápio dele |
+| DELETE | `/restaurants/:id` 🔒 | Remove o restaurante e o cardápio dele (só o dono) |
 
 ### Cardápio
 
 | Método | Rota | Descrição |
 |---|---|---|
 | GET | `/restaurants/:restaurantId/dishes` | Lista os pratos do restaurante |
-| POST | `/restaurants/:restaurantId/dishes` 🔒 | Cria `{ name, description, price }` → 201 |
-| POST | `/dishes/:dishId/image` 🔒 | Envia foto (form-data, campo `image`) → 200 |
+| POST | `/restaurants/:restaurantId/dishes` 🔒 | Cria `{ name, description, price }` → 201 (só o dono) |
+| POST | `/dishes/:dishId/image` 🔒 | Envia foto (form-data, campo `image`) → 200 (só o dono) |
 
-Respostas de erro do upload: 400 (sem arquivo, formato inválido ou imagem corrompida), 413 (acima de 5 MB) e 404 (prato inexistente).
+Respostas de erro: 401 (sem token), 403 (não é o dono do restaurante), 400 (sem arquivo, formato inválido ou imagem corrompida), 413 (acima de 5 MB) e 404 (prato inexistente).
 
-As imagens otimizadas ficam em `uploads/dishes/` e são servidas em `/uploads/dishes/<arquivo>.webp`.
+As imagens otimizadas ficam em `uploads/dishes/` e `uploads/users/` e são servidas em `/uploads/<pasta>/<arquivo>.webp`.
 
 ## Estrutura
 
@@ -113,7 +115,7 @@ As imagens otimizadas ficam em `uploads/dishes/` e são servidas em `/uploads/di
 │       ├── dishes/            routes, controller, service
 │       └── shared/            email.service, image.service,
 │                              upload.middleware, error.middleware
-├── uploads/dishes/            Imagens otimizadas (não versionadas)
+├── uploads/                   Imagens otimizadas de pratos e perfis (não versionadas)
 ├── .env.example
 └── server.js                  Carrega o .env e liga o servidor
 ```
@@ -128,3 +130,6 @@ As imagens otimizadas ficam em `uploads/dishes/` e são servidas em `/uploads/di
 | [004](docs/adr/ADR-004-autenticacao-jwt.md) | Autenticação com JWT |
 | [005](docs/adr/ADR-005-servico-de-envio-de-email.md) | Serviço compartilhado de e-mail |
 | [006](docs/adr/ADR-006-processamento-de-imagens.md) | Processamento de imagens dentro da API |
+| [007](docs/adr/ADR-007-dono-do-restaurante.md) | Restaurante com dono e autorização por propriedade |
+
+A análise da correção do cadastro de pratos, os testes e as respostas da Atividade 8 estão em [docs/atividade-8.md](docs/atividade-8.md).

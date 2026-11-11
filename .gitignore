@@ -7,6 +7,8 @@ node_modules
 # Imagens enviadas pelos usuários (a pasta fica no repositório, os arquivos não)
 uploads/dishes/*
 !uploads/dishes/.gitkeep
+uploads/users/*
+!uploads/users/.gitkeep
 
 # Log local do servidor
 servidor.log

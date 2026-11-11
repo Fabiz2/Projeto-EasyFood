@@ -90,14 +90,92 @@ function renderConta() {
   if (logado) {
     const nome = estado.usuario?.name || estado.usuario?.email || "você";
     contaEl.innerHTML = `
-      <span class="conta-nome">Olá, <strong>${escapeHtml(nome)}</strong></span>
+      <button type="button" class="avatar-botao" id="btn-perfil" title="Alterar foto de perfil">
+        ${avatarHtml(estado.usuario)}
+        <span class="conta-nome">Olá, <strong>${escapeHtml(nome)}</strong></span>
+      </button>
       <button type="button" class="btn btn-claro btn-pequeno" id="btn-sair">Sair</button>
     `;
     $("#btn-sair").addEventListener("click", () => sair());
+    $("#btn-perfil").addEventListener("click", abrirPerfil);
   } else {
     contaEl.innerHTML = `<button type="button" class="btn btn-claro" id="btn-entrar">Entrar</button>`;
     $("#btn-entrar").addEventListener("click", abrirConta);
   }
+}
+
+function iniciais(nome) {
+  return (nome || "?")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((parte) => parte[0].toUpperCase())
+    .join("");
+}
+
+function avatarHtml(usuario, classe = "") {
+  const conteudo = usuario?.imageUrl
+    ? `<img src="${escapeHtml(usuario.imageUrl)}" alt="" />`
+    : escapeHtml(iniciais(usuario?.name));
+  return `<span class="avatar ${classe}" aria-hidden="true">${conteudo}</span>`;
+}
+
+function salvarUsuario(user) {
+  estado.usuario = user;
+  localStorage.setItem("easyfood_user", JSON.stringify(user));
+}
+
+// Atualiza os dados do usuário (inclusive a foto) a partir da API
+async function carregarPerfil() {
+  if (!estado.token) return;
+  try {
+    const { user } = await api("/auth/me", { auth: true });
+    salvarUsuario(user);
+    renderConta();
+    renderCardapio();
+  } catch {
+    // token inválido: api() já fez logout
+  }
+}
+
+function abrirPerfil() {
+  const form = $("#form-perfil");
+  form.reset();
+  erroDoForm(form);
+  $("#perfil-avatar").outerHTML = avatarHtml(estado.usuario, "avatar-grande").replace('class="avatar', 'id="perfil-avatar" class="avatar');
+  $("#perfil-nome").textContent = estado.usuario?.name || "";
+  $("#perfil-email").textContent = estado.usuario?.email || "";
+  $("#dlg-perfil").showModal();
+}
+
+$("#form-perfil").addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  const form = evento.target;
+  const arquivo = form.image.files[0];
+
+  if (!arquivo) return erroDoForm(form, "Escolha uma foto.");
+  if (arquivo.size > 5 * 1024 * 1024) return erroDoForm(form, "A foto passa de 5 MB. Escolha uma menor.");
+
+  travarForm(form, true);
+  try {
+    const dados = new FormData();
+    dados.append("image", arquivo);
+    const user = await api("/auth/me/image", { method: "POST", body: dados, auth: true });
+    salvarUsuario(user);
+    $("#dlg-perfil").close();
+    renderConta();
+    recado("Foto de perfil salva.");
+  } catch (erro) {
+    erroDoForm(form, erro.message);
+  } finally {
+    travarForm(form, false);
+  }
+});
+
+// O dono do restaurante é quem pode editar o cardápio (restaurantes antigos sem dono: qualquer um logado)
+function podeEditar(restaurante) {
+  if (!estado.token || !restaurante) return false;
+  return !restaurante.ownerId || restaurante.ownerId === estado.usuario?.id;
 }
 
 function sair(avisar = true) {
@@ -159,9 +237,8 @@ $("#form-conta").addEventListener("submit", async (evento) => {
     const { token, user } = await api("/auth/login", { method: "POST", body: { email, password } });
 
     estado.token = token;
-    estado.usuario = user;
     localStorage.setItem("easyfood_token", token);
-    localStorage.setItem("easyfood_user", JSON.stringify(user));
+    salvarUsuario(user);
 
     dlgConta.close();
     renderConta();
@@ -310,10 +387,11 @@ function renderCardapio() {
     <header class="cardapio-topo">
       <h2>${escapeHtml(r.name)}</h2>
       <p>${escapeHtml(r.category || "Sem categoria")}, avaliação ${formatoNota.format(Number(r.rating || 0))} de 5</p>
-      <div class="cardapio-acoes so-logado">
+      ${podeEditar(r) ? `
+      <div class="cardapio-acoes">
         <button type="button" class="btn btn-carimbo btn-pequeno" data-acao="novo-prato">Adicionar prato</button>
         <button type="button" class="btn btn-claro btn-pequeno btn-excluir" data-acao="excluir">Excluir restaurante</button>
-      </div>
+      </div>` : ""}
     </header>
     ${itens}
   `;
@@ -333,11 +411,12 @@ function renderPrato(p) {
           <span class="prato-preco">${formatoPreco.format(Number(p.price))}</span>
         </div>
         <p class="prato-descricao">${escapeHtml(p.description)}</p>
-        <div class="prato-acoes so-logado">
+        ${podeEditar(estado.selecionado) ? `
+        <div class="prato-acoes">
           <button type="button" class="link" data-acao="foto" data-id="${p.id}">
             ${p.imageUrl ? "Trocar foto" : "Enviar foto"}
           </button>
-        </div>
+        </div>` : ""}
       </div>
     </li>`;
 }
@@ -459,3 +538,4 @@ document.querySelectorAll("dialog").forEach((dlg) => {
 
 renderConta();
 carregarRestaurantes();
+carregarPerfil();

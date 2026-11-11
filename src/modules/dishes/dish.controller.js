@@ -3,7 +3,7 @@ const dishService = require("./dish.service");
 async function create(req, res) {
   try {
     const { restaurantId } = req.params;
-    const dish = await dishService.createDish(restaurantId, req.body || {});
+    const dish = await dishService.createDish(restaurantId, req.body || {}, req.user.id);
     return res.status(201).json(dish);
   } catch (error) {
     return res.status(error.statusCode || 500).json({
@@ -30,7 +30,7 @@ async function uploadImage(req, res) {
       return res.status(400).json({ error: "Nenhuma imagem enviada (campo: image)" });
     }
 
-    const dish = await dishService.uploadDishImage(req.params.dishId, req.file.buffer);
+    const dish = await dishService.uploadDishImage(req.params.dishId, req.file.buffer, req.user.id);
     return res.json(dish);
   } catch (error) {
     return res.status(error.statusCode || 500).json({

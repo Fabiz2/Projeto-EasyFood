@@ -21,11 +21,11 @@ async function create(req, res) {
   }
 
   try {
-    const restaurant = await restaurantService.createRestaurant({
-      name,
-      category,
-      rating
-    });
+    // O dono é quem está logado, identificado pelo token (nunca pelo corpo da requisição)
+    const restaurant = await restaurantService.createRestaurant(
+      { name, category, rating },
+      req.user.id
+    );
     res.status(201).json(restaurant);
   } catch (error) {
     res.status(500).json({
@@ -35,29 +35,15 @@ async function create(req, res) {
 }
 
 async function remove(req, res) {
-  const { id } = req.params;
-
-  if (!id) {
-    return res.status(400).json({
-      error: "ID do restaurante é obrigatório"
-    });
-  }
-
   try {
-    const restaurant = await restaurantService.deleteRestaurant(id);
+    const restaurant = await restaurantService.deleteRestaurant(req.params.id, req.user.id);
     res.json({
       message: "Restaurante deletado com sucesso",
       restaurant
     });
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({
-        error: "Restaurante não encontrado"
-      });
-    }
-
-    res.status(500).json({
-      error: "Erro interno do servidor"
+    res.status(error.statusCode || 500).json({
+      error: error.statusCode ? error.message : "Erro interno do servidor"
     });
   }
 }
