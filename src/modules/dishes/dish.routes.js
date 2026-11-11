@@ -5,13 +5,10 @@ const upload = require("../shared/upload.middleware");
 
 const router = express.Router();
 
-// Consulta do cardápio é pública
 router.get("/restaurants/:restaurantId/dishes", dishController.list);
 
-// Cadastro de prato exige JWT
 router.post("/restaurants/:restaurantId/dishes", authMiddleware, dishController.create);
 
-// Upload: autenticação antes do Multer
 router.post(
   "/dishes/:dishId/image",
   authMiddleware,

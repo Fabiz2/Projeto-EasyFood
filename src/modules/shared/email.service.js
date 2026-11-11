@@ -1,10 +1,5 @@
 const { Resend } = require("resend");
 
-// Serviço compartilhado de e-mail.
-// O resto da EasyFood conhece apenas sendEmail(); o provedor fica escondido aqui.
-// Provedores suportados: SendPulse (chave "sp_...") e Resend (chave "re_...").
-// A chave e o remetente ficam no .env, nunca no código.
-
 const apiKey = process.env.EMAIL_API_KEY || "";
 const provider = (process.env.EMAIL_PROVIDER || detectProvider(apiKey)).toLowerCase();
 
@@ -35,8 +30,6 @@ function remetente() {
   const name = process.env.EMAIL_FROM_NAME || "EasyFood";
   let email = process.env.EMAIL_FROM || "";
 
-  // O remetente de teste do Resend não existe no SendPulse:
-  // nesse caso usa o e-mail da própria conta (EMAIL_TEST_TO), que já é um remetente válido.
   if (provider === "sendpulse" && (!email || email.endsWith("@resend.dev"))) {
     email = process.env.EMAIL_TEST_TO;
   }
@@ -47,8 +40,6 @@ function remetente() {
   return { name, email };
 }
 
-// ---------- SendPulse ----------
-// Docs: https://sendpulse.com/integrations/api/smtp (POST /smtp/emails)
 async function sendWithSendPulse({ to, toName, subject, html, text }) {
   const from = remetente();
 
@@ -63,7 +54,7 @@ async function sendWithSendPulse({ to, toName, subject, html, text }) {
         subject,
         from,
         to: [{ email: to, name: toName || to }],
-        html: Buffer.from(html, "utf8").toString("base64"), // o SendPulse exige HTML em Base64
+        html: Buffer.from(html, "utf8").toString("base64"),
         text
       }
     })
@@ -77,8 +68,6 @@ async function sendWithSendPulse({ to, toName, subject, html, text }) {
   }
 }
 
-// ---------- Resend ----------
-// Docs: https://resend.com/docs
 async function sendWithResend({ to, subject, html, text }) {
   const resend = new Resend(apiKey);
   const from = remetente();
@@ -102,7 +91,6 @@ async function sendEmail({ to, toName, subject, header, body, footer }) {
   }
 
   if (provider === "nenhum") {
-    // Sem chave configurada: registra no terminal em vez de enviar
     console.warn(`[EMAIL] EMAIL_API_KEY ausente: e-mail não enviado para ${to} - "${subject}"`);
     return;
   }

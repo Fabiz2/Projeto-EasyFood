@@ -21,7 +21,6 @@ async function create(req, res) {
   }
 
   try {
-    // O dono é quem está logado, identificado pelo token (nunca pelo corpo da requisição)
     const restaurant = await restaurantService.createRestaurant(
       { name, category, rating },
       req.user.id

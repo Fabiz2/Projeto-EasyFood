@@ -14,14 +14,12 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Imagens otimizadas dos pratos (Atividade 7)
 app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
 app.use("/auth", authRoutes);
 app.use("/restaurants", restaurantRoutes);
 app.use(dishRoutes);
 
-// Precisa ficar por último: captura erros do Multer e erros não tratados
 app.use(errorHandler);
 
 module.exports = app;

@@ -15,8 +15,6 @@ function parseId(value) {
   return id;
 }
 
-// Autorização por dono (correção do professor, Atividade 8).
-// Restaurantes sem dono (ownerId nulo) continuam podendo ser gerenciados por qualquer usuário logado.
 function ensureOwnership(restaurant, userId) {
   if (restaurant.ownerId && restaurant.ownerId !== userId) {
     throw httpError(403, "Você não tem permissão para gerenciar este restaurante");
@@ -31,17 +29,15 @@ async function listRestaurants() {
 }
 
 async function createRestaurant(data, userId) {
-  // 1. Operação principal
   const restaurant = await prisma.restaurant.create({
     data: {
       name: data.name,
       category: data.category,
       rating: data.rating || 0,
-      ownerId: userId // dono = usuário autenticado
+      ownerId: userId
     }
   });
 
-  // 2. Ações secundárias: uma falha no e-mail não desfaz o cadastro
   const testTo = process.env.EMAIL_TEST_TO;
 
   try {
@@ -77,7 +73,6 @@ async function createRestaurant(data, userId) {
     console.error("Erro ao notificar o comercial:", error.message);
   }
 
-  // 3. Retorno da operação principal
   return restaurant;
 }
 

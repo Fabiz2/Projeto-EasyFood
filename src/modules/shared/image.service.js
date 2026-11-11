@@ -3,16 +3,11 @@ const path = require("path");
 const fs = require("fs/promises");
 const crypto = require("crypto");
 
-// Serviço compartilhado de imagens.
-// Qualquer módulo (pratos, perfil de usuário, futuramente logotipos) usa as mesmas
-// funções: o módulo diz ONDE guardar e em que TAMANHO, o serviço cuida do resto.
-
 const UPLOADS_ROOT = path.resolve(process.cwd(), "uploads");
 
-// Predefinições por tipo de imagem
 const PRESETS = {
-  dishes: { width: 800, fit: "inside" },              // até 800 px de largura, sem cortar
-  users: { width: 400, height: 400, fit: "cover" }    // quadrada 400x400, recortada no centro
+  dishes: { width: 800, fit: "inside" },
+  users: { width: 400, height: 400, fit: "cover" }
 };
 
 async function optimizeImage(buffer, folder = "dishes") {
@@ -41,7 +36,6 @@ async function optimizeImage(buffer, folder = "dishes") {
       .webp({ quality: 80 })
       .toFile(filePath);
   } catch (err) {
-    // O mimetype veio como imagem, mas o Sharp não conseguiu decodificar
     const error = new Error("Arquivo de imagem inválido ou corrompido");
     error.statusCode = 400;
     throw error;
@@ -57,13 +51,11 @@ async function optimizeImage(buffer, folder = "dishes") {
   return `/uploads/${folder}/${filename}`;
 }
 
-// Remove uma imagem antiga quando ela é substituída. Falhar aqui não é grave:
-// a nova imagem já foi salva, então apenas registramos o problema.
 async function removeImage(imageUrl) {
   if (!imageUrl || !imageUrl.startsWith("/uploads/")) return;
 
   const filePath = path.resolve(process.cwd(), "." + imageUrl);
-  if (!filePath.startsWith(UPLOADS_ROOT)) return; // nunca apaga fora de uploads/
+  if (!filePath.startsWith(UPLOADS_ROOT)) return;
 
   try {
     await fs.unlink(filePath);

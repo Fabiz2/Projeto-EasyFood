@@ -27,8 +27,6 @@ function validateDish(data) {
     throw httpError(400, "Preço deve ser um número maior que zero");
   }
 
-  // imageUrl NÃO é exigido aqui: o prato é criado primeiro e a foto vem depois,
-  // por POST /dishes/:dishId/image (esse era o bug corrigido no repositório do professor).
   return { name, description, price: price.toFixed(2) };
 }
 
@@ -42,7 +40,7 @@ async function createDish(restaurantId, data, userId) {
     throw httpError(404, "Restaurante não encontrado");
   }
 
-  ensureOwnership(restaurant, userId); // só o dono cadastra pratos
+  ensureOwnership(restaurant, userId);
 
   return prisma.dish.create({
     data: {
@@ -75,7 +73,6 @@ async function uploadDishImage(dishId, buffer, userId) {
 
   ensureOwnership(dish.restaurant, userId);
 
-  // Se a otimização falhar, o prato continua cadastrado com a imagem anterior (ou sem imagem)
   const imageUrl = await imageService.optimizeImage(buffer, "dishes");
 
   const updated = await prisma.dish.update({
@@ -83,7 +80,7 @@ async function uploadDishImage(dishId, buffer, userId) {
     data: { imageUrl }
   });
 
-  await imageService.removeImage(dish.imageUrl); // apaga a foto antiga, se havia
+  await imageService.removeImage(dish.imageUrl);
 
   return updated;
 }

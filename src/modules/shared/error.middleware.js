@@ -1,8 +1,5 @@
 const multer = require("multer");
 
-// Middleware global de erros: evita que a aplicação caia
-// e devolve um status HTTP adequado.
-// eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {

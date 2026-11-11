@@ -1,6 +1,3 @@
-/* EasyFood: papel kraft, folha de cardápio e carimbo */
-
-/* Fontes locais (SIL Open Font License): Alfa Slab One e Bitter */
 @font-face {
   font-family: "Alfa Slab One";
   src: url("fonts/alfa-slab-one-latin-400-normal.woff2") format("woff2");
@@ -40,7 +37,6 @@
   font-display: swap;
 }
 
-
 :root {
   --kraft: #b89470;
   --kraft-escuro: #a17d58;
@@ -73,7 +69,6 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--kraft);
-  /* fibras discretas do papel kraft */
   background-image:
     repeating-linear-gradient(97deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 7px),
     repeating-linear-gradient(-8deg, rgba(60, 35, 10, 0.04) 0 1px, transparent 1px 5px);
@@ -105,8 +100,6 @@ textarea {
 [hidden] {
   display: none !important;
 }
-
-/* ---------- Placa (cabeçalho) ---------- */
 
 .placa {
   background: var(--madeira);
@@ -153,8 +146,6 @@ textarea {
   color: var(--papel);
   font-weight: 600;
 }
-
-/* ---------- Avatar ---------- */
 
 .avatar {
   display: inline-grid;
@@ -217,8 +208,6 @@ textarea {
   margin: 0;
 }
 
-/* ---------- Botões ---------- */
-
 .btn {
   border: 2px solid transparent;
   border-radius: 3px;
@@ -274,8 +263,6 @@ body:not(.logado) .so-logado {
   display: none !important;
 }
 
-/* ---------- Layout principal ---------- */
-
 .balcao {
   flex: 1;
   width: 100%;
@@ -287,8 +274,6 @@ body:not(.logado) .so-logado {
   gap: 2rem;
   align-items: start;
 }
-
-/* ---------- Lista de restaurantes (escrita sobre o kraft) ---------- */
 
 .lista-topo {
   display: flex;
@@ -357,8 +342,6 @@ body:not(.logado) .so-logado {
   border-bottom: 0;
   color: var(--tinta-suave);
 }
-
-/* ---------- Folha do cardápio ---------- */
 
 .folha {
   background: var(--papel);
@@ -461,7 +444,6 @@ body:not(.logado) .so-logado {
   background: repeating-linear-gradient(45deg, var(--papel-sombra) 0 6px, #ebe4d1 6px 12px);
 }
 
-/* nome ........ preço */
 .prato-linha {
   display: flex;
   align-items: baseline;
@@ -506,8 +488,6 @@ body:not(.logado) .so-logado {
   color: var(--tinta-suave);
   padding: 2rem 0 1rem;
 }
-
-/* ---------- Janelas (dialog) ---------- */
 
 .janela {
   border: 0;
@@ -619,8 +599,6 @@ body:not(.logado) .so-logado {
   margin-right: auto;
 }
 
-/* ---------- Recado (toast) ---------- */
-
 .recado {
   position: fixed;
   left: 50%;
@@ -641,8 +619,6 @@ body:not(.logado) .so-logado {
   transform: translate(-50%, 0);
 }
 
-/* ---------- Rodapé ---------- */
-
 .rodape {
   text-align: center;
   padding: 1rem 1.5rem 1.5rem;
@@ -653,8 +629,6 @@ body:not(.logado) .so-logado {
 .rodape p {
   margin: 0;
 }
-
-/* ---------- Responsivo ---------- */
 
 @media (max-width: 760px) {
   .balcao {

@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const prisma = require("../../database/prisma");
 const imageService = require("../shared/image.service");
 
-// Campos públicos do usuário: a senha (hash) nunca sai da API
 const publicUser = { id: true, name: true, email: true, imageUrl: true };
 
 async function register({ name, email, password }) {
@@ -66,11 +65,9 @@ async function getMe(userId) {
   return user;
 }
 
-// A foto é sempre do usuário do token: o userId vem do middleware, nunca da requisição
 async function uploadProfileImage(userId, buffer) {
   const current = await getMe(userId);
 
-  // Mesmo serviço usado pelos pratos, com o preset de perfil (400x400)
   const imageUrl = await imageService.optimizeImage(buffer, "users");
 
   const user = await prisma.user.update({
@@ -79,7 +76,7 @@ async function uploadProfileImage(userId, buffer) {
     select: publicUser
   });
 
-  await imageService.removeImage(current.imageUrl); // apaga a foto anterior, se havia
+  await imageService.removeImage(current.imageUrl);
 
   return user;
 }

@@ -1,5 +1,3 @@
-// EasyFood — front-end
-// A página é servida pelo próprio Express, então a API fica na mesma origem.
 const API_URL = "";
 
 const estado = {
@@ -25,8 +23,6 @@ const dlgFoto = $("#dlg-foto");
 
 const formatoPreco = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const formatoNota = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-
-// ---------- utilidades ----------
 
 function escapeHtml(valor) {
   return String(valor ?? "")
@@ -81,8 +77,6 @@ function travarForm(form, travado) {
   form.querySelectorAll("button").forEach((b) => (b.disabled = travado));
 }
 
-// ---------- conta ----------
-
 function renderConta() {
   const logado = Boolean(estado.token);
   document.body.classList.toggle("logado", logado);
@@ -125,7 +119,6 @@ function salvarUsuario(user) {
   localStorage.setItem("easyfood_user", JSON.stringify(user));
 }
 
-// Atualiza os dados do usuário (inclusive a foto) a partir da API
 async function carregarPerfil() {
   if (!estado.token) return;
   try {
@@ -134,7 +127,6 @@ async function carregarPerfil() {
     renderConta();
     renderCardapio();
   } catch {
-    // token inválido: api() já fez logout
   }
 }
 
@@ -172,7 +164,6 @@ $("#form-perfil").addEventListener("submit", async (evento) => {
   }
 });
 
-// O dono do restaurante é quem pode editar o cardápio (restaurantes antigos sem dono: qualquer um logado)
 function podeEditar(restaurante) {
   if (!estado.token || !restaurante) return false;
   return !restaurante.ownerId || restaurante.ownerId === estado.usuario?.id;
@@ -250,8 +241,6 @@ $("#form-conta").addEventListener("submit", async (evento) => {
     travarForm(form, false);
   }
 });
-
-// ---------- restaurantes ----------
 
 function renderLista() {
   if (!estado.restaurantes.length) {
@@ -342,8 +331,6 @@ async function excluirRestaurante() {
     recado(erro.message);
   }
 }
-
-// ---------- cardápio ----------
 
 async function selecionarRestaurante(id) {
   estado.selecionado = estado.restaurantes.find((r) => r.id === id) || null;
@@ -467,7 +454,6 @@ $("#form-prato").addEventListener("submit", async (evento) => {
       try {
         await enviarFoto(prato.id, arquivo);
       } catch (erro) {
-        // O prato continua salvo mesmo se a foto falhar
         aviso = `${prato.name} adicionado, mas a foto não foi enviada: ${erro.message}`;
       }
     }
@@ -521,20 +507,15 @@ $("#form-foto").addEventListener("submit", async (evento) => {
   }
 });
 
-// ---------- janelas ----------
-
 document.querySelectorAll("[data-fechar]").forEach((botao) => {
   botao.addEventListener("click", () => botao.closest("dialog").close());
 });
 
-// fecha clicando fora da janela
 document.querySelectorAll("dialog").forEach((dlg) => {
   dlg.addEventListener("click", (evento) => {
     if (evento.target === dlg) dlg.close();
   });
 });
-
-// ---------- início ----------
 
 renderConta();
 carregarRestaurantes();
